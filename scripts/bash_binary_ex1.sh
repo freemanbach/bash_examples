@@ -1,23 +1,30 @@
 #!/bin/bash
 #
 # https://www.xmodulo.com/embed-binary-file-bash-script.html
+# https://www.baeldung.com/linux/bin-sh-installers
 # cat helloworld >> bash_binary_ex1.sh
 
-# line number where payload starts
-PAYLOAD_LINE=$(awk '/^__PAYLOAD_BEGINS__/ { print NR + 1; exit 0; }' $0)
+function die() { echo "Error!"; exit 1; }
 
-# directory where a tarball is to be extracted
-WORK_DIR=/var/tmp
+installer=/var/tmp
+
+# line number where payload starts
+PAYLOAD_LINE=$(awk '/^__ARCHIVE__:/ { print NR + 1; exit 0; }' $0)
+# PAYLOAD_LINE=$(grep -a -n "__ARCHIVE__:$" $installer | cut -f1 -d:)
+# echo $(tail -n +$((PAYLOAD_LINE+ 1)) $installer)
 
 # Name of the executable file
 FILE_NAME=helloworld
 
 # extract the embedded tar file
-tail -n +${PAYLOAD_LINE} $0 | base64 -d | cat > ${WORK_DIR}/${FILE_NAME}
-chmod 755 $(WORK_DIR)/${FILE_NAME}
+tail -n +${PAYLOAD_LINE} $0 | base64 -d | cat > ${installer}/${FILE_NAME}
+#tail -n +$((PAYLOAD_LINE + 1)) $installer | base64 -d | cat > ${installer}/${FILE_NAME} &>/dev/null || die
+chmod 755 ${installer}/${FILE_NAME}
 
 # Run the BInary File
-${WORK_DIR}/${FILE_NAME}
+# exec ${installer}/${FILE_NAME}
 
+echo "Install Complete !"
 exit 0
-__PAYLOAD_BEGINS__
+
+__ARCHIVE__:
